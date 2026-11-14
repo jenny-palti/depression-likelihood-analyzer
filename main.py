@@ -1,35 +1,71 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder
 
-df = pd.read_csv("data/Student_Depression_Dataset.csv")
-df = df.drop(columns=["Home_division"])
 
-y = df["Depression"].map({"No": 0, "Yes": 1})
-X = df.drop(columns=["Depression"])
+def load_data(file_path: str) -> pd.DataFrame:
+    df = pd.read_csv(file_path)
+    return df.drop(columns=["Home_division"])
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42, stratify=y
-)
 
-text_columns = X.select_dtypes(exclude="number").columns.tolist()
+def prepare_features_and_target(df: pd.DataFrame):
+    y = df["Depression"].map({"No": 0, "Yes": 1})
+    X = df.drop(columns=["Depression"])
+    return X, y
 
-encoder = ColumnTransformer(
-    transformers=[("text_to_numbers", OneHotEncoder(handle_unknown="ignore"), text_columns)],
-    remainder="passthrough",
-)
 
-model = Pipeline(steps=[
-    ("encode", encoder),
-    ("tree_model", RandomForestClassifier(
-        n_estimators=200, max_depth=8, class_weight="balanced", random_state=42
-    )),
-])
+def split_data(X, y):
+    return train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
-model.fit(X_train, y_train)
-predictions = model.predict(X_test)
-print(classification_report(y_test, predictions, target_names=["No", "Yes"]))
+
+def build_model(X):
+    text_columns = X.select_dtypes(exclude="number").columns.tolist()
+    encoder = ColumnTransformer(
+        transformers=[
+            ("text_to_numbers", OneHotEncoder(handle_unknown="ignore"), text_columns)
+        ],
+        remainder="passthrough",
+    )
+
+    return Pipeline(
+        steps=[
+            ("encode", encoder),
+            (
+                "tree_model",
+                RandomForestClassifier(
+                    n_estimators=200,
+                    max_depth=8,
+                    class_weight="balanced",
+                    random_state=42,
+                ),
+            ),
+        ]
+    )
+
+
+def train_model(model, X_train, y_train):
+    model.fit(X_train, y_train)
+    return model
+
+
+def evaluate_model(model, X_test, y_test):
+    predictions = model.predict(X_test)
+    print(classification_report(y_test, predictions, target_names=["No", "Yes"]))
+    return predictions
+
+
+def main():
+    df = load_data("data/Student_Depression_Dataset.csv")
+    X, y = prepare_features_and_target(df)
+    X_train, X_test, y_train, y_test = split_data(X, y)
+    model = build_model(X)
+    trained_model = train_model(model, X_train, y_train)
+    evaluate_model(trained_model, X_test, y_test)
+
+
+if __name__ == "__main__":
+    main()
