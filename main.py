@@ -8,13 +8,26 @@ from sklearn.preprocessing import OneHotEncoder
 
 
 def load_data(file_path: str) -> pd.DataFrame:
-    df = pd.read_csv(file_path)
-    return df.drop(columns=["Home_division"])
+    return pd.read_csv(file_path)
+
+
+def inspect_data(df: pd.DataFrame) -> None:
+    print("Shape (rows, columns):", df.shape)
+    print("\nColumn types:")
+    print(df.dtypes)
+    print("\nMissing values per column:")
+    print(df.isna().sum())
+    print("\nDuplicate rows:", df.duplicated().sum())
+    for column in df.select_dtypes(exclude="number").columns:
+        print(f"\nValues in {column}:")
+        print(df[column].value_counts())
+    print("\nSummary of the number columns:")
+    print(df.describe().T.to_string())
 
 
 def prepare_features_and_target(df: pd.DataFrame):
     y = df["Depression"].map({"No": 0, "Yes": 1})
-    X = df.drop(columns=["Depression"])
+    X = df.drop(columns=["Home_division", "Depression"])
     return X, y
 
 
@@ -60,6 +73,7 @@ def evaluate_model(model, X_test, y_test):
 
 def main():
     df = load_data("data/Student_Depression_Dataset.csv")
+    inspect_data(df)
     X, y = prepare_features_and_target(df)
     X_train, X_test, y_train, y_test = split_data(X, y)
     model = build_model(X)
