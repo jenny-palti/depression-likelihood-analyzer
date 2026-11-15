@@ -5,6 +5,10 @@ from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
+import os
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 
 
 def load_data(file_path: str) -> pd.DataFrame:
@@ -31,6 +35,20 @@ def check_unusual_values(df: pd.DataFrame) -> None:
     print("Students with Cost_without_study = 0:", (df["Cost_without_study"] == 0).sum())
     print("\nHow many students in each semester:")
     print(df["Current_semester"].value_counts().sort_index())
+
+
+
+def plot_depression_by_group(df: pd.DataFrame, column: str, order=None) -> None:
+    data = df.copy()
+    data["Depression_yes"] = data["Depression"].map({"No": 0, "Yes": 1})
+    os.makedirs("figures", exist_ok=True)
+    plt.figure(figsize=(7, 4))
+    sns.barplot(data=data, x=column, y="Depression_yes", order=order, errorbar=None)
+    plt.ylabel("Share of students with Depression = Yes")
+    plt.title(f"Depression by {column}")
+    plt.tight_layout()
+    plt.savefig(f"figures/depression_by_{column}.png")
+    plt.close()
 
 
 def prepare_features_and_target(df: pd.DataFrame):
@@ -83,6 +101,7 @@ def main():
     df = load_data("data/Student_Depression_Dataset.csv")
     inspect_data(df)
     check_unusual_values(df)
+    plot_depression_by_group(df, "Health_condition", order=["Good", "Normal", "Abnormal", "Critical"])
     X, y = prepare_features_and_target(df)
     X_train, X_test, y_train, y_test = split_data(X, y)
     model = build_model(X)
