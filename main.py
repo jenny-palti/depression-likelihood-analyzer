@@ -97,6 +97,20 @@ def evaluate_model(model, X_test, y_test):
     return predictions
 
 
+def compare_with_and_without(df: pd.DataFrame, column: str) -> None:
+    X, y = prepare_features_and_target(df)
+    versions = [
+        (f"WITH {column}", X),
+        (f"WITHOUT {column}", X.drop(columns=[column])),
+    ]
+    for title, features in versions:
+        X_train, X_test, y_train, y_test = split_data(features, y)
+        model = build_model(features)
+        trained_model = train_model(model, X_train, y_train)
+        print(f"\n===== Results {title} =====")
+        evaluate_model(trained_model, X_test, y_test)
+
+
 def main():
     df = load_data("data/Student_Depression_Dataset.csv")
     inspect_data(df)
@@ -107,6 +121,7 @@ def main():
     model = build_model(X)
     trained_model = train_model(model, X_train, y_train)
     evaluate_model(trained_model, X_test, y_test)
+    compare_with_and_without(df, "Health_condition")
 
 
 if __name__ == "__main__":
