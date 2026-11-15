@@ -25,6 +25,14 @@ def inspect_data(df: pd.DataFrame) -> None:
     print(df.describe().T.to_string())
 
 
+def check_unusual_values(df: pd.DataFrame) -> None:
+    print("Students with Current_semester = 0:", (df["Current_semester"] == 0).sum())
+    print("Students with Current_semester above 8:", (df["Current_semester"] > 8).sum())
+    print("Students with Cost_without_study = 0:", (df["Cost_without_study"] == 0).sum())
+    print("\nHow many students in each semester:")
+    print(df["Current_semester"].value_counts().sort_index())
+
+
 def prepare_features_and_target(df: pd.DataFrame):
     y = df["Depression"].map({"No": 0, "Yes": 1})
     X = df.drop(columns=["Home_division", "Depression"])
@@ -74,6 +82,7 @@ def evaluate_model(model, X_test, y_test):
 def main():
     df = load_data("data/Student_Depression_Dataset.csv")
     inspect_data(df)
+    check_unusual_values(df)
     X, y = prepare_features_and_target(df)
     X_train, X_test, y_train, y_test = split_data(X, y)
     model = build_model(X)
