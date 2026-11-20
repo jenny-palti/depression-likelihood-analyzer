@@ -1,13 +1,9 @@
+import joblib
 import pandas as pd
-from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder
 import os
-import matplotlib.pyplot as plt
-import seaborn as sns
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 
@@ -154,6 +150,35 @@ def evaluate_model(model, X_test, y_test, cutoff: float = CUTOFF):
     print(classification_report(y_test, predictions, target_names=["under 10", "10 or more"]))
     return predictions
 
+def save_model(model, path: str = "models/prescreen_model.joblib") -> None:
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    joblib.dump({"model": model, "cutoff": CUTOFF, "features": FEATURE_COLUMNS}, path)
+
+
+def load_model(path: str = "models/prescreen_model.joblib") -> dict:
+    return joblib.load(path)
+
+
+def recall_by_group(y_true, pred, groups_df) -> None:
+    check = groups_df.copy()
+    check["true"] = y_true
+    check["invited"] = pred
+    check["caught"] = (check["true"] == 1) & (check["invited"] == 1)
+
+    for col in groups_df.columns:
+        summary = check.groupby(col).agg(
+            students=("true", "size"),
+            truly_10plus=("true", "sum"),
+            caught=("caught", "sum"),
+            invited_rate=("invited", "mean"),
+        )
+        summary["recall"] = summary["caught"] / summary["truly_10plus"]
+        print(col)
+        print(summary.round(2))
+        print()
+
+
+
 def load_data(file_path: str) -> pd.DataFrame:
     return pd.read_csv(file_path)
 
@@ -184,7 +209,18 @@ def train_model(model, X_train, y_train):
 
 
 def main():
-    pass
+    df = add_phq_columns(load_data("data/DATASET-Raw_data_clean.csv"))
+    X, y, groups = prepare_features_and_target(df)
+    X_train, X_test, y_train, y_test, groups_train, groups_test = split_data(X, y, groups)
+
+    model = train_model(build_model(), X_train, y_train)
+    predictions = evaluate_model(model, X_test, y_test)
+
+    print("Results by group (test part)")
+    recall_by_group(y_test, predictions, groups_test)
+
+    save_model(model)
+    print("Model saved to models/prescreen_model.joblib")
 
 
 if __name__ == "__main__":
