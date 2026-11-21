@@ -2,6 +2,11 @@ import streamlit as st
 
 import main
 
+@st.cache_resource
+def get_explainer_model():
+    return main.build_explainer_model()
+
+
 ANSWER_OPTIONS = {
     0: "Not at all",
     1: "Several days",
@@ -55,6 +60,13 @@ with phq_tab:
             st.markdown(f"- {reason}")
     else:
         st.write("No individual item scored high.")
+
+    if not protocol["crisis"] and reasons:
+        if st.button("Write a short plain-language note"):
+            with st.spinner("Writing the note..."):
+                note = main.explain_reasons(level, reasons, get_explainer_model())
+            if note:
+                st.info(note)    
 
 with prescreen_tab:
     st.write("The pre-screen will go here.")
