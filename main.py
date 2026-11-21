@@ -89,6 +89,10 @@ Rules:
 - Do not use the word "depression".
 - Write in a neutral, respectful tone."""
 
+
+NOTE_UNAVAILABLE = "A note could not be generated. The items scored high are listed below."
+
+
 EXAMPLES = [
     (
         "Level 5 (Routine support). Items scored high: little interest or pleasure; trouble sleeping; feeling tired.",
@@ -157,7 +161,11 @@ def explain_reasons(level: int, reasons: list, model) -> str | None:
         messages.append(HumanMessage(content=example_input))
         messages.append(AIMessage(content=example_output))
     messages.append(HumanMessage(content=f"{level_label}. Items scored high: {'; '.join(items)}."))
-    return model.invoke(messages).text
+    try:
+        return model.invoke(messages).text
+    except Exception as error:
+        print("Explainer failed:", type(error).__name__)
+        return NOTE_UNAVAILABLE
 
 
 

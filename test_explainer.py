@@ -15,3 +15,11 @@ for group in samples:
         print("Items:", row["reasons"])
         print("Note :", note)
         print()
+
+class BrokenModel:
+    def invoke(self, messages):
+        raise RuntimeError("simulated failure")
+
+
+print("Failure test:")
+print(main.explain_reasons(5, ["Trouble concentrating"], BrokenModel()))
