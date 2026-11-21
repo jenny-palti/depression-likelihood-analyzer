@@ -1,4 +1,5 @@
 import main
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 df = main.add_phq_columns(main.load_data("data/DATASET-Raw_data_clean.csv"))
 model = main.build_explainer_model()
@@ -23,3 +24,6 @@ class BrokenModel:
 
 print("Failure test:")
 print(main.explain_reasons(5, ["Trouble concentrating"], BrokenModel()))
+print("Timeout test:")
+fast_timeout_model = ChatGoogleGenerativeAI(model=main.EXPLAINER_MODEL, timeout=0.001)
+print(main.explain_reasons(5, ["Trouble concentrating"], fast_timeout_model))

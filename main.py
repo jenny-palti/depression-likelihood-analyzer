@@ -73,6 +73,8 @@ LEVEL_INFO = {
 
 EXPLAINER_MODEL = "gemini-3.5-flash-lite"
 
+EXPLAINER_TIMEOUT_SECONDS = 30
+
 SHORT_NAMES = {
     PHQ_NAMES[2]: "feeling down or hopeless",
     PHQ_NAMES[8]: "moving or speaking very slowly or being restless",
@@ -143,7 +145,7 @@ def get_reasons(row) -> list:
 
 def build_explainer_model():
     load_dotenv()
-    return ChatGoogleGenerativeAI(model=EXPLAINER_MODEL)
+    return ChatGoogleGenerativeAI(model=EXPLAINER_MODEL, timeout=EXPLAINER_TIMEOUT_SECONDS)
 
 
 def explain_reasons(level: int, reasons: list, model) -> str | None:
