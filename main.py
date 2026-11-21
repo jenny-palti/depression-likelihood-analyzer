@@ -32,7 +32,7 @@ PROTOCOLS = {
         "text": """This student answered 2 or 3 on PHQ-9 item 9 (thoughts of being better off dead or of self-harm on more than half the days or nearly every day). No score is shown. A follow-up conversation is recommended.
 1. Contact the student: same day for level 1, within 24-48 hours for level 2.
 2. A trained counselor carries out a structured suicide risk assessment (for example the C-SSRS) and, where possible, consults a second trained colleague before deciding on the level of care.
-3. If the student shows immediate danger (a plan, intent, or access to means): do not leave them alone, remove means if it is safe to do so, and call emergency services [local emergency number].
+3. If the student shows immediate danger (a plan, intent, or access to means): do not leave them alone, remove means if it is safe to do so, and call emergency services (your local emergency number).
 4. Contact the parent or guardian according to institutional policy, and advise securing medications and other dangerous items.
 5. Complete a safety plan with the student: warning signs, coping strategies, supports, crisis line numbers.
 6. Refer to community mental health services with 24-hour access if needed, and obtain consent to share information with the providers.
@@ -45,18 +45,18 @@ The counselor decides. This tool does not diagnose.""",
         "text": """This student answered 1 on PHQ-9 item 9 (such thoughts on several days). No score is shown. A follow-up conversation is recommended.
 1. A counselor reviews and contacts the student: within 3 days for level 3 (PHQ-9 total 15 or higher), within 4 days for level 4 (total 14 or lower). The order is a sorting aid, not a difference in risk.
 2. In the conversation, ask directly about suicidal thoughts and carry out a structured screening (for example the C-SSRS screener).
-3. If the screening suggests higher risk, move to Path A at once.
+3. If the screening suggests higher risk, move to Protocol A at once.
 4. If not, agree a safety plan where needed, share resources and counseling options, and involve the parent or guardian according to policy.
 5. Document the contact and the plan. Check in again within 2 weeks.
 The counselor decides. This tool does not diagnose.""",
     },
     "C": {
-        "name": "Routine support",
+        "name": "Support and check-in",
         "crisis": False,
-        "text": """The student answered 0 on PHQ-9 item 9. This is not a crisis path, and a score may be shown.
-1. Level 5 (PHQ-9 total 15 or higher): offer a check-in conversation and information about support services.
-2. Level 6 (total 14 or lower): routine support. Share wellbeing resources. Students are listed by total, highest first.
-3. An answer of 0 does not rule out risk. If a concern arises later from the student or anyone else, use Path A or B at any time.
+        "text": """The student answered 0 on PHQ-9 item 9, so the PHQ-9 total is shown above.
+1. Level 5 (PHQ-9 total 15 or higher): offer a check-in conversation and information about support services. A high total without a crisis answer still calls for a timely, scheduled check-in. This tool only sorts the order.
+2. Level 6 (total 14 or lower): standard support. Share wellbeing resources.
+3. An answer of 0 does not rule out risk. If a concern arises later from the student or anyone else, use Protocol A or B at any time.
 The counselor decides. This tool does not diagnose.""",
     },
 }
@@ -67,7 +67,7 @@ LEVEL_INFO = {
     3: {"protocol": "B", "label": "Priority review"},
     4: {"protocol": "B", "label": "Scheduled review"},
     5: {"protocol": "C", "label": "Check-in offered"},
-    6: {"protocol": "C", "label": "Routine"},
+    6: {"protocol": "C", "label": "Standard"},
 }
 
 
@@ -97,11 +97,11 @@ NOTE_UNAVAILABLE = "A note could not be generated. The items scored high are lis
 
 EXAMPLES = [
     (
-        "Level 5 (Routine support). Items scored high: little interest or pleasure; trouble sleeping; feeling tired.",
+        "Level 5 (Support and check-in). Items scored high: little interest or pleasure; trouble sleeping; feeling tired.",
         "This student scored high on little interest or pleasure, trouble sleeping, and feeling tired. A follow-up conversation is recommended.",
     ),
     (
-        "Level 6 (Routine support). Items scored high: trouble concentrating.",
+        "Level 6 (Support and check-in). Items scored high: trouble concentrating.",
         "This student scored high on trouble concentrating. A follow-up conversation is recommended.",
     ),
 ]
