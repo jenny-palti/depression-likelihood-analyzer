@@ -1,6 +1,12 @@
+import os
 import streamlit as st
 
 import main
+
+try:
+    os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
+except Exception:
+    pass
 
 @st.cache_resource
 def get_explainer_model():
