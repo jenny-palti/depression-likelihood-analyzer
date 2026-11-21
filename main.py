@@ -6,6 +6,9 @@ from sklearn.pipeline import Pipeline
 import os
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
+from dotenv import load_dotenv
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 
 PHQ_ITEM_COLUMNS = [f"phq{i}" for i in range(1, 10)]
@@ -68,6 +71,36 @@ LEVEL_INFO = {
 }
 
 
+EXPLAINER_MODEL = "gemini-3.5-flash-lite"
+
+SHORT_NAMES = {
+    PHQ_NAMES[2]: "feeling down or hopeless",
+    PHQ_NAMES[8]: "moving or speaking very slowly or being restless",
+}
+
+SYSTEM_PROMPT = """You write a short note for a university counselor.
+You receive a follow-up level and a list of PHQ-9 items that a student scored high on.
+Write one or two plain sentences that restate those items and say that a follow-up conversation is recommended.
+Rules:
+- Use only the items given. Add nothing else.
+- Do not diagnose, name a condition, or suggest a cause.
+- Do not predict outcomes or suggest treatment.
+- Do not mention suicide or self-harm.
+- Do not use the word "depression".
+- Write in a neutral, respectful tone."""
+
+EXAMPLES = [
+    (
+        "Level 5 (Routine support). Items scored high: little interest or pleasure; trouble sleeping; feeling tired.",
+        "This student scored high on little interest or pleasure, trouble sleeping, and feeling tired. A follow-up conversation is recommended.",
+    ),
+    (
+        "Level 6 (Routine support). Items scored high: trouble concentrating.",
+        "This student scored high on trouble concentrating. A follow-up conversation is recommended.",
+    ),
+]
+
+
 def severity_band(total: int) -> str:
     if total <= 4:
         return "Minimal"
@@ -102,6 +135,30 @@ def get_reasons(row) -> list:
         if row[f"phq{i}"] >= 2:
             reasons.append(PHQ_NAMES[i])
     return reasons
+
+
+def build_explainer_model():
+    load_dotenv()
+    return ChatGoogleGenerativeAI(model=EXPLAINER_MODEL)
+
+
+def explain_reasons(level: int, reasons: list, model) -> str | None:
+    protocol = LEVEL_INFO[level]["protocol"]
+    if PROTOCOLS[protocol]["crisis"]:
+        return None
+    if PHQ_NAMES[9] in reasons:
+        return None
+    if not reasons:
+        return "No individual item scored high."
+    items = [SHORT_NAMES.get(name, name.lower()) for name in reasons]
+    level_label = f"Level {level} ({PROTOCOLS[protocol]['name']})"
+    messages = [SystemMessage(content=SYSTEM_PROMPT)]
+    for example_input, example_output in EXAMPLES:
+        messages.append(HumanMessage(content=example_input))
+        messages.append(AIMessage(content=example_output))
+    messages.append(HumanMessage(content=f"{level_label}. Items scored high: {'; '.join(items)}."))
+    return model.invoke(messages).text
+
 
 
 def add_phq_columns(df: pd.DataFrame) -> pd.DataFrame:
